@@ -141,29 +141,70 @@ if analyze_button or ticker_input:
                         with col4:
                             st.metric("Day Low", f"${live_data['Low'].min():.2f}")
                         
-                        # Intraday price chart
+                        # Intraday price chart with graph type selector
                         st.markdown("**Intraday Price Movement**")
+                        
+                        chart_type = st.radio(
+                            "Chart Type:",
+                            ["Line", "Candlestick"],
+                            horizontal=True,
+                            key="intraday_chart_type"
+                        )
                         
                         fig_intraday = go.Figure()
                         
-                        fig_intraday.add_trace(go.Scatter(
-                            x=live_data.index,
-                            y=live_data['Close'],
-                            mode='lines',
-                            name='Price',
-                            line=dict(color='blue', width=2),
-                            fill='tozeroy',
-                            fillcolor='rgba(0, 100, 250, 0.1)'
-                        ))
+                        if chart_type == "Line":
+                            # Clean line chart
+                            fig_intraday.add_trace(go.Scatter(
+                                x=live_data.index,
+                                y=live_data['Close'],
+                                mode='lines',
+                                name='Price',
+                                line=dict(color='#1f77b4', width=2.5),
+                                hovertemplate='<b>Time</b>: %{x}<br><b>Price</b>: $%{y:.2f}<extra></extra>'
+                            ))
+                            
+                            # Add subtle fill
+                            fig_intraday.add_trace(go.Scatter(
+                                x=live_data.index,
+                                y=live_data['Close'],
+                                fill='tozeroy',
+                                fillcolor='rgba(31, 119, 180, 0.1)',
+                                line=dict(width=0),
+                                showlegend=False,
+                                hoverinfo='skip'
+                            ))
+                        else:
+                            # Candlestick chart
+                            fig_intraday.add_trace(go.Candlestick(
+                                x=live_data.index,
+                                open=live_data['Open'],
+                                high=live_data['High'],
+                                low=live_data['Low'],
+                                close=live_data['Close'],
+                                name='Price',
+                                increasing_line_color='#26a69a',
+                                decreasing_line_color='#ef5350'
+                            ))
                         
                         fig_intraday.update_layout(
-                            title=f"{ticker_input} - Today's Price Movement",
+                            title=dict(
+                                text=f"{ticker_input} - Today's Price Movement",
+                                font=dict(size=18, color='#2C3E50')
+                            ),
                             xaxis_title="Time",
                             yaxis_title="Price ($)",
-                            height=300,
+                            height=450,
                             hovermode='x unified',
-                            showlegend=False
+                            showlegend=False,
+                            xaxis_rangeslider_visible=False,
+                            plot_bgcolor='white',
+                            paper_bgcolor='white',
+                            font=dict(color='#2C3E50')
                         )
+                        
+                        fig_intraday.update_xaxes(showgrid=True, gridcolor='#ECF0F1')
+                        fig_intraday.update_yaxes(showgrid=True, gridcolor='#ECF0F1')
                         
                         st.plotly_chart(fig_intraday, use_container_width=True)
                         
