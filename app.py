@@ -216,7 +216,7 @@ if analyze_button or ticker_input or 'selected_ticker' in st.session_state:
                             showlegend=False,
                             xaxis_rangeslider_visible=False,
                             plot_bgcolor='#f5f5f5',
-                            paper_bgcolor='#000000',
+                            paper_bgcolor='#0F1116',
                             font=dict(color='#f5f5f5')
                         )
                         
