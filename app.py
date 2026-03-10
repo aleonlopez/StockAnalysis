@@ -89,7 +89,96 @@ if analyze_button or ticker_input:
                     st.header(f"{info.get('longName', ticker_input)}")
                     st.markdown(f"**Ticker:** {info.get('symbol', 'N/A')} | **Exchange:** {info.get('exchange', 'N/A')} | **Sector:** {info.get('sector', 'N/A')}")
                     
+                    # Live Price Tracking
+                    st.subheader("Live Price Tracker")
+                    
+                    # Auto-refresh toggle
+                    col_refresh1, col_refresh2 = st.columns([3, 1])
+                    with col_refresh1:
+                        auto_refresh = st.checkbox("Enable auto-refresh (updates every 10 seconds)", value=False)
+                    with col_refresh2:
+                        if st.button("Refresh Now", type="secondary"):
+                            st.rerun()
+                    
+                    # Get live price data
+                    live_data = stock.history(period="1d", interval="1m")
+                    
+                    if not live_data.empty:
+                        latest_price = live_data['Close'].iloc[-1]
+                        previous_close = info.get('previousClose', 0)
+                        
+                        # Calculate change
+                        if previous_close and previous_close > 0:
+                            price_change = latest_price - previous_close
+                            price_change_pct = (price_change / previous_close) * 100
+                        else:
+                            price_change = 0
+                            price_change_pct = 0
+                        
+                        # Display live price with color coding
+                        col1, col2, col3, col4 = st.columns(4)
+                        
+                        with col1:
+                            if price_change >= 0:
+                                st.metric(
+                                    "Live Price", 
+                                    f"${latest_price:.2f}",
+                                    f"+${price_change:.2f} (+{price_change_pct:.2f}%)"
+                                )
+                            else:
+                                st.metric(
+                                    "Live Price", 
+                                    f"${latest_price:.2f}",
+                                    f"${price_change:.2f} ({price_change_pct:.2f}%)"
+                                )
+                        
+                        with col2:
+                            st.metric("Previous Close", f"${previous_close:.2f}")
+                        
+                        with col3:
+                            st.metric("Day High", f"${live_data['High'].max():.2f}")
+                        
+                        with col4:
+                            st.metric("Day Low", f"${live_data['Low'].min():.2f}")
+                        
+                        # Intraday price chart
+                        st.markdown("**Intraday Price Movement**")
+                        
+                        fig_intraday = go.Figure()
+                        
+                        fig_intraday.add_trace(go.Scatter(
+                            x=live_data.index,
+                            y=live_data['Close'],
+                            mode='lines',
+                            name='Price',
+                            line=dict(color='blue', width=2),
+                            fill='tozeroy',
+                            fillcolor='rgba(0, 100, 250, 0.1)'
+                        ))
+                        
+                        fig_intraday.update_layout(
+                            title=f"{ticker_input} - Today's Price Movement",
+                            xaxis_title="Time",
+                            yaxis_title="Price ($)",
+                            height=300,
+                            hovermode='x unified',
+                            showlegend=False
+                        )
+                        
+                        st.plotly_chart(fig_intraday, use_container_width=True)
+                        
+                        # Auto-refresh functionality
+                        if auto_refresh:
+                            import time
+                            time.sleep(10)
+                            st.rerun()
+                    else:
+                        st.warning("Live price data unavailable. Market may be closed.")
+                    
+                    st.markdown("---")
+                    
                     # Current Price - Big Display
+                    st.subheader("Market Summary")
                     col1, col2, col3, col4 = st.columns(4)
                     with col1:
                         current_price = info.get('currentPrice', info.get('regularMarketPrice', 0))
