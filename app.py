@@ -491,17 +491,33 @@ if analyze_button or ticker_input:
                         st.subheader("Recent News")
                         try:
                             news = stock.news
+                            
+                            # Filter out articles with missing data
+                            valid_news = []
                             if news and len(news) > 0:
-                                for i, article in enumerate(news[:10], 1):
+                                for article in news:
+                                    # Only include articles with actual title and link
+                                    if (article.get('title') and 
+                                        article.get('title') != 'N/A' and 
+                                        article.get('link') and 
+                                        article.get('link') != 'N/A'):
+                                        valid_news.append(article)
+                            
+                            if valid_news and len(valid_news) > 0:
+                                for i, article in enumerate(valid_news[:10], 1):
                                     with st.container():
-                                        st.markdown(f"**{i}. {article.get('title', 'N/A')}**")
-                                        st.markdown(f"*Publisher: {article.get('publisher', 'N/A')}*")
-                                        st.markdown(f"[Read Article]({article.get('link', '#')})")
+                                        st.markdown(f"**{i}. {article.get('title', 'No title')}**")
+                                        publisher = article.get('publisher', 'Unknown')
+                                        st.markdown(f"*Publisher: {publisher}*")
+                                        link = article.get('link', '#')
+                                        st.markdown(f"[Read Article]({link})")
                                         st.markdown("---")
                             else:
-                                st.info("No recent news available")
+                                st.info("News data is currently unavailable for this stock. This is a known limitation with the data provider.")
+                                st.markdown("**Alternative:** Visit [Yahoo Finance](https://finance.yahoo.com/quote/{}/news) or [Google Finance](https://www.google.com/finance/quote/{}:NASDAQ) for news.".format(ticker_input, ticker_input))
                         except Exception as e:
-                            st.warning(f"Unable to fetch news: {e}")
+                            st.warning("Unable to fetch news data. This feature may be temporarily unavailable.")
+                            st.markdown("**Alternative:** Visit [Yahoo Finance](https://finance.yahoo.com/quote/{}/news) or [Google Finance](https://www.google.com/finance/quote/{}:NASDAQ) for news.".format(ticker_input, ticker_input))
                     
             except Exception as e:
                 st.error(f"Error fetching stock data: {e}")
