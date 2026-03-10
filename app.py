@@ -215,9 +215,9 @@ if analyze_button or ticker_input or 'selected_ticker' in st.session_state:
                             hovermode='x unified',
                             showlegend=False,
                             xaxis_rangeslider_visible=False,
-                            plot_bgcolor='#f5f5f5',
-                            paper_bgcolor='#f5f5f5',
-                            font=dict(color='#2C3E50')
+                            plot_bgcolor="#f5f5f5",
+                            paper_bgcolor="#000000ff",
+                            font=dict(color="#f5f5f5")
                         )
                         
                         fig_intraday.update_xaxes(showgrid=True, gridcolor='white')
